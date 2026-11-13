@@ -113,7 +113,7 @@ digraph T {
   s [style=rounded, label="Старт: seek_to(0)"];
   k [label="read_keys(): KEY0 – пауза або продовження,\nKEY1 – з початку (через seek_to)"];
   f [label="audio_fill(): долити чергу звуку\n(після кінця ролика – тишею)"];
-  c [label="update_clock(): clk за таймером у межах\n[w − LATENCY − MAX_LAG; w − LATENCY]"];
+  c [label="update_clock(): clk за таймером у межах\nвід w − LATENCY − MAX_LAG до w − LATENCY"];
   p [shape=diamond, margin="0,0", label="пауза або\nкінець?"];
   w [label="want = (clk + cost · rate / TIMER_HZ) / spf"];
   e [shape=diamond, margin="0,0", height=0.5, label="want ≥ N?"];
