@@ -1,0 +1,16 @@
+# середовище Python
+.venv/
+__pycache__/
+*.pyc
+
+# згенеровані файли й відео (чужі ролики в репозиторій не кладемо)
+output/
+*.mp4
+*.mkv
+*.avi
+*.mov
+*.webm
+*.bin
+
+# проміжні файли збирання прошивки (сам шаблон player_cpulator.elf зберігаємо)
+firmware/cpulator/build/*.o
