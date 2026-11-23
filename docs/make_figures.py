@@ -4,7 +4,8 @@
     python docs/make_figures.py [файл_плати.bin файл_cpulator.elf]
 
 Без аргументів — лише схеми й графіки синхронізації (дані з sync_*.csv у цій
-теці). З аргументами — ще й графік розмірів кадрів готових роликів.
+теці). З аргументами — ще й графік розмірів кадрів готових роликів і аркуш
+кадрів, розпакованих із файла для CPUlator (trailer_frames.png).
 Потрібні Graphviz (dot), matplotlib і Pillow — лише для цих рисунків, не для застосунку.
 """
 import csv
@@ -247,6 +248,34 @@ def plot_frames(board_path, cpulator_path):
     return out
 
 
+TRAILER_PICKS = (576, 864, 1056, 1248, 1536, 2208)   # 24, 36, 44, 52, 64 і 92 с трейлера
+GAP = 4
+
+
+def trailer_frames(path, picks=TRAILER_PICKS, cols=3):
+    """Кадри саме такими, якими їх покаже програвач: розпаковані незалежним
+    декодером із готового файла (320x240, RGB565, після мертвої зони)."""
+    from devideo import codec, media
+    with open(path, 'rb') as f:
+        data, _ = verify.blob_from_file(f.read())
+    h = blob.parse(data)
+    idx = blob.index(data, h)
+    work = np.zeros(320 * 240, dtype=np.uint16)
+    tiles = {}
+    for k in range(max(picks) + 1):               # дельти розгортаються лише підряд
+        off, size = int(idx[k, 0]), int(idx[k, 1])
+        key = bool(size & blob.KEY_FLAG)
+        codec.rle_decode(data[off:off + (size & (blob.KEY_FLAG - 1))], work, key)
+        if k in picks:
+            tiles[k] = Image.fromarray(media.to_rgb(work.copy()))
+    rows = (len(picks) + cols - 1) // cols
+    sheet = Image.new('RGB', (cols * 320 + (cols - 1) * GAP, rows * 240 + (rows - 1) * GAP), 'white')
+    for i, k in enumerate(picks):
+        sheet.paste(tiles[k], ((i % cols) * (320 + GAP), (i // cols) * (240 + GAP)))
+    sheet.save(os.path.join(HERE, 'trailer_frames.png'))
+    print('рисунок trailer_frames.png: кадри', ', '.join('%d (%d с)' % (k, k // 24) for k in picks))
+
+
 if __name__ == '__main__':
     diagram_system()
     diagram_format()
@@ -255,3 +284,4 @@ if __name__ == '__main__':
     plot_sync_full()
     if len(sys.argv) >= 3:
         plot_frames(sys.argv[1], sys.argv[2])
+        trailer_frames(sys.argv[2])
